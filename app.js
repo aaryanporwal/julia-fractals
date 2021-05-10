@@ -3,9 +3,9 @@ const header = document.querySelector('h2')
 const canvas = document.querySelector('canvas')
 const ctx = canvas.getContext('2d')
 
-// The size of our canvas
-const width = 400
-const height = 400
+// The size of our canvas (Size is inversely proportional to performance)
+const width = 300
+const height = 300
 
 // Set the size of our canvas
 canvas.width = width
@@ -23,9 +23,12 @@ let clicked = false
 // How much we want the image to move
 let pan = math.complex(0, 0)
 
+// How much we zoom the image
+let zoom = 1;
+
 // Apply the Julia Set formula to see if point z "escapes"
 function julia(z, i = 0) {
-  // Apply the Julia Set formula: z*z+constant
+  // Apply the Julia Set formula: z * z + constant
   z = z.mul(z)
   z = z.add(constant)
 
@@ -44,11 +47,11 @@ function pointToColor(point) {
   let iterations = julia(point)
 
   // What percentage of our limit is that?
-  const percentage = iterations/maxIterations
+  const percentage = iterations / maxIterations
 
-  const red = percentage*255
-  const green = percentage*255
-  const blue = percentage*255
+  const red = percentage * 255
+  const green = percentage * 255
+  const blue = percentage * 255
 
   // Create a color from that percentage
   return `rgb(${red}, ${green}, ${blue})`
@@ -57,11 +60,14 @@ function pointToColor(point) {
 // Turn XY pixel coodinates into a point on the complex plane
 function pixelToPoint(x, y) {
   // Map percentage of total width/height to a value from -1 to +1
-  const zx = (x/width)*2-1
-  const zy = 1-(y/height)*2
+  const zx = (x / width) * 2 - 1
+  const zy = 1 - (y / height) * 2
 
   // Create a complex number based on our new XY values
   let z = math.complex(zx, zy)
+  
+  // Zoom the camera
+  z = z.div(zoom)
 
   // Pan the camera
   z = z.add(pan)
@@ -95,7 +101,7 @@ function draw() {
 
 // Update the elements that need to change
 function update() {
-  header.innerHTML = constant.toString()
+  header.innerHTML = `Point(${constant.toString()}) Zoomed at ${zoom} X`
   draw()
 }
 
@@ -112,6 +118,9 @@ function click(event) {
 
   // Turn mouse coordinates into a point on the complex plane
   pan = pixelToPoint(mouseX, mouseY)
+
+  // Zoom twice on click
+  zoom *=2
 
   // Update everything!
   update()
